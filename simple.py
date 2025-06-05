@@ -1,4 +1,7 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QTabWidget, QWidget, QPushButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QTabWidget, QWidget, QPushButton
+from PySide6.QtCore import Qt
+
+import english_script, french_script, spanish_script
 
 # Customize window
 class MainWindow(QMainWindow):
@@ -31,21 +34,45 @@ class MainWindow(QMainWindow):
     
     def initTab1(self):
         layout = QVBoxLayout(self.tab1)
+
+        self.label1 = QLabel("")
+        self.label1.setStyleSheet("font-size: 16px;")
+        self.label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         button1 = QPushButton("Run Script 1")
         button1.setFixedSize(150, 40)
+        button1.clicked.connect(lambda: self.label1.setText(english_script.run()))
+        
         layout.addWidget(button1)
+        layout.addWidget(self.label1)
 
     def initTab2(self):
         layout = QVBoxLayout(self.tab2)
+
+        self.label2 = QLabel("")
+        self.label2.setStyleSheet("font-size: 16px;")
+        self.label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         button2 = QPushButton("Run Script 2")
         button2.setFixedSize(150, 40)
+        button2.clicked.connect(lambda: self.label2.setText(french_script.run()))
+        
         layout.addWidget(button2)
+        layout.addWidget(self.label2)
 
     def initTab3(self):
         layout = QVBoxLayout(self.tab3)
+
+        self.label3 = QLabel("")
+        self.label3.setStyleSheet("font-size: 16px;")
+        self.label3.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         button3 = QPushButton("Run Script 3")
         button3.setFixedSize(150, 40)
+        button3.clicked.connect(lambda: self.label3.setText(spanish_script.run()))
+        
         layout.addWidget(button3)
+        layout.addWidget(self.label3)
 
 app = QApplication([])
 
