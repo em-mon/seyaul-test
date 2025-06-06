@@ -1,83 +1,75 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QTabWidget, QWidget, QPushButton
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QTabWidget,
+    QWidget, QPushButton, QFrame
+)
+from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt
 
 import english_script, french_script, spanish_script
 
-# Customize window
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        # Initialize/customize window gui
-        self.setWindowTitle('Simple GUI')
-        self.setGeometry(100, 100, 400, 300)
+        self.setWindowTitle('Hana Food Distributor, Inc. Tool')
+        self.setGeometry(300, 300, 1000, 800)
 
+        # Main container widget and layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
+        self.main_layout = QHBoxLayout(self.central_widget)
+        self.central_widget.setStyleSheet("background-color: #f5f5f5;")
 
-        self.layout = QVBoxLayout(self.central_widget)
+        # === Sidebar ===
+        # Add smoother transition, not pushing against main widget content, and dropping down
+        self.sidebar = QFrame()
+        self.sidebar.setFixedWidth(200)
+        self.sidebar.setFixedHeight(600)
+        self.sidebar.setStyleSheet("background-color: #d8d8d8;")
+        self.sidebar_layout = QVBoxLayout(self.sidebar)
+        self.sidebar_layout.addWidget(QLabel("Tool 1"))
+        self.sidebar_layout.addWidget(QLabel("Tool 2"))
+        self.sidebar_layout.addWidget(QLabel("Tool 3"))
+        self.sidebar.setVisible(False)
 
-        # Layout the three tabs
-        self.tab_widget = QTabWidget()
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-        self.tab3 = QWidget()
+        # === Main Content Area ===
+        self.content = QWidget()
+        self.content_layout = QVBoxLayout(self.content)
 
-        self.tab_widget.addTab(self.tab1, "Tab 1")
-        self.tab_widget.addTab(self.tab2, "Tab 2")
-        self.tab_widget.addTab(self.tab3, "Tab 3")
+        # === Hamburger Button ===
+        self.hamburger_button = QPushButton("☰")
+        self.hamburger_button.setFixedSize(40, 40)
+        self.hamburger_button.setStyleSheet("font-size: 24px; background: #254a9d;")
+        self.hamburger_button.clicked.connect(self.toggle_sidebar)
+        self.content_layout.addWidget(self.hamburger_button, alignment=Qt.AlignLeft)
 
-        self.layout.addWidget(self.tab_widget)
+        # === Header Layout (Logo + Text) ===
+        header_layout = QHBoxLayout()
 
-        self.initTab1()
-        self.initTab2()
-        self.initTab3()
-    
-    def initTab1(self):
-        layout = QVBoxLayout(self.tab1)
+        logo = QLabel()
+        pixmap = QPixmap("media/hana_logo.png")
+        pixmap = pixmap.scaledToHeight(500, Qt.SmoothTransformation)
+        logo.setPixmap(pixmap)
+        logo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        self.label1 = QLabel("")
-        self.label1.setStyleSheet("font-size: 16px;")
-        self.label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label = QLabel("HANA\nTOOL")
+        label.setStyleSheet("color: #1d55b4; font-size: 90px; font-weight: 100;")
+        label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        button1 = QPushButton("Run Script 1")
-        button1.setFixedSize(150, 40)
-        button1.clicked.connect(lambda: self.label1.setText(english_script.run()))
-        
-        layout.addWidget(button1)
-        layout.addWidget(self.label1)
+        header_layout.addWidget(logo)
+        header_layout.addWidget(label)
+        header_layout.setAlignment(Qt.AlignHCenter)
 
-    def initTab2(self):
-        layout = QVBoxLayout(self.tab2)
+        self.content_layout.addLayout(header_layout)
 
-        self.label2 = QLabel("")
-        self.label2.setStyleSheet("font-size: 16px;")
-        self.label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # === Add sidebar and content to the main layout ===
+        self.main_layout.addWidget(self.sidebar)
+        self.main_layout.addWidget(self.content)
 
-        button2 = QPushButton("Run Script 2")
-        button2.setFixedSize(150, 40)
-        button2.clicked.connect(lambda: self.label2.setText(french_script.run()))
-        
-        layout.addWidget(button2)
-        layout.addWidget(self.label2)
+    def toggle_sidebar(self):
+        self.sidebar.setVisible(not self.sidebar.isVisible())
 
-    def initTab3(self):
-        layout = QVBoxLayout(self.tab3)
-
-        self.label3 = QLabel("")
-        self.label3.setStyleSheet("font-size: 16px;")
-        self.label3.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        button3 = QPushButton("Run Script 3")
-        button3.setFixedSize(150, 40)
-        button3.clicked.connect(lambda: self.label3.setText(spanish_script.run()))
-        
-        layout.addWidget(button3)
-        layout.addWidget(self.label3)
 
 app = QApplication([])
-
-# Our window
 window = MainWindow()
 window.show()
-
 app.exec()
