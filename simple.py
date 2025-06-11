@@ -3,9 +3,7 @@ from PySide6.QtWidgets import (
     QWidget, QPushButton, QFrame
 )
 from PySide6.QtGui import QPixmap
-from PySide6.QtCore import Qt
-
-import english_script, french_script, spanish_script
+from PySide6.QtCore import Qt, QPropertyAnimation, QRect
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -19,30 +17,23 @@ class MainWindow(QMainWindow):
         self.main_layout = QHBoxLayout(self.central_widget)
         self.central_widget.setStyleSheet("background-color: #f5f5f5;")
 
-        # === Sidebar ===
-        # Add smoother transition, not pushing against main widget content, and dropping down
-        self.sidebar = QFrame()
-        self.sidebar.setFixedWidth(200)
-        self.sidebar.setFixedHeight(600)
-        self.sidebar.setStyleSheet("background-color: #d8d8d8;")
-        self.sidebar_layout = QVBoxLayout(self.sidebar)
-        self.sidebar_layout.addWidget(QLabel("Tool 1"))
-        self.sidebar_layout.addWidget(QLabel("Tool 2"))
-        self.sidebar_layout.addWidget(QLabel("Tool 3"))
-        self.sidebar.setVisible(False)
-
-        # === Main Content Area ===
         self.content = QWidget()
         self.content_layout = QVBoxLayout(self.content)
 
-        # === Hamburger Button ===
+        # Hamburger Button
         self.hamburger_button = QPushButton("☰")
-        self.hamburger_button.setFixedSize(40, 40)
-        self.hamburger_button.setStyleSheet("font-size: 24px; background: #254a9d;")
+        self.hamburger_button.setFixedSize(50, 50)
+        self.hamburger_button.setStyleSheet("""
+            font-size: 50px;
+            color: black;
+            background-color: transparent;
+            border: none;
+        """)
+        self.hamburger_button.setCursor(Qt.PointingHandCursor)
         self.hamburger_button.clicked.connect(self.toggle_sidebar)
         self.content_layout.addWidget(self.hamburger_button, alignment=Qt.AlignLeft)
 
-        # === Header Layout (Logo + Text) ===
+        # Main Content (Logo area)
         header_layout = QHBoxLayout()
 
         logo = QLabel()
@@ -60,13 +51,71 @@ class MainWindow(QMainWindow):
         header_layout.setAlignment(Qt.AlignHCenter)
 
         self.content_layout.addLayout(header_layout)
-
-        # === Add sidebar and content to the main layout ===
-        self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content)
 
+        # Dimming Layer
+        self.dimming_layer = QWidget(self.central_widget)
+        self.dimming_layer.setGeometry(0, 0, 1000, 800)
+        self.dimming_layer.setStyleSheet("background-color: rgba(0, 0, 0, 100);")
+        self.dimming_layer.setVisible(False)
+        self.dimming_layer.mousePressEvent = lambda event: self.toggle_sidebar()
+
+        # Hamburger Menu/Sidebar
+        self.sidebar = QFrame(self.central_widget)
+        self.sidebar.setGeometry(-300, 0, 300, 800)
+        self.sidebar.setStyleSheet("border: 1px solid #aaa;")
+        self.sidebar.setVisible(False)
+        sidebar_layout = QVBoxLayout(self.sidebar)
+
+        # Close Button
+        self.close_button = QPushButton("ㄨ")
+        self.close_button.setFixedSize(40, 40)
+        self.close_button.setStyleSheet("""
+            font-size: 24px;
+            color: black;
+            background-color: transparent;
+            border: none;
+        """)
+        self.close_button.setCursor(Qt.PointingHandCursor)
+        self.close_button.clicked.connect(self.toggle_sidebar)
+
+        sidebar_layout.addWidget(self.close_button, alignment=Qt.AlignRight)
+        # tool1_button = QPushButton("Tool 1")
+        # tool1_button.setCursor(Qt.PointingHandCursor)
+        # tool1_button.clicked.connect(lambda: self.switch_to_tab(0)) 
+        # sidebar_layout.addWidget(tool1_button)
+
+        # Sidebar animation setup
+        self.sidebar_animation = QPropertyAnimation(self.sidebar, b"geometry")
+        self.sidebar_animation.setDuration(300)  
+        self.sidebar_animation.finished.connect(self.hide_sidebar)
+
     def toggle_sidebar(self):
-        self.sidebar.setVisible(not self.sidebar.isVisible())
+        if not self.sidebar.isVisible():
+            self.sidebar.setVisible(True)
+            self.dimming_layer.setVisible(True)
+
+            self.sidebar_animation.stop()
+            self.sidebar_animation.setStartValue(QRect(-300, 0, 300, 800))
+            self.sidebar_animation.setEndValue(QRect(0, 0, 300, 800))
+            self.sidebar_animation.start()
+        
+        # Reset after closed
+        else:
+            self.sidebar_animation.stop()
+            self.sidebar_animation.setStartValue(QRect(0, 0, 300, 800))
+            self.sidebar_animation.setEndValue(QRect(-300, 0, 300, 800))
+            self.sidebar_animation.start()
+
+    def hide_sidebar(self):
+        # Only hide sidebar and dimming when it’s completely slid out
+        if self.sidebar.geometry().x() == -300:
+            self.sidebar.setVisible(False)
+            self.dimming_layer.setVisible(False)
+    
+    def switch_to_tab(self, index):
+        self.tab_widget.setCurrentIndex(index)
+        self.toggle_sidebar()
 
 
 app = QApplication([])
